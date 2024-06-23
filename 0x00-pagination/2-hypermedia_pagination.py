@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Contains class with methods to create simple pagination from csv data
+Contains class with methods to create simple pagination from csv data.
 """
 import csv
-from typing import List
+from typing import List, Tuple
+
+# Assuming 'index_range' function is available as part of '0-simple_helper_function'
 index_range = __import__('0-simple_helper_function').index_range
 
 
 class Server:
-    """Server class to paginate a database of popular baby names.
-    """
+    """Server class to paginate a database of popular baby names."""
     DATA_FILE = "Popular_Baby_Names.csv"
 
     def __init__(self):
@@ -36,7 +37,7 @@ class Server:
         Args:
             value (int): The value to be asserted.
         """
-        assert type(value) is int and value > 0
+        assert type(value) is int and value > 0, "Value must be a positive integer."
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
         """
@@ -49,25 +50,32 @@ class Server:
         """
         self.assert_positive_integer_type(page)
         self.assert_positive_integer_type(page_size)
+        
         dataset = self.dataset()
         start, end = index_range(page, page_size)
-        try:
-            data = dataset[start:end]
-        except IndexError:
-            data = []
-        return data
+        
+        if start >= len(dataset):
+            return []
+        
+        return dataset[start:end]
 
     def get_hyper(self, page: int = 1, page_size: int = 10) -> dict:
         """
-        Returns a page of the dataset.
+        Returns a page of the dataset with pagination details.
         Args:
             page (int): The page number.
             page_size (int): The page size.
         Returns:
-            List[List]: The page of the dataset.
+            dict: Pagination details and the page of the dataset.
         """
-        total_pages = len(self.dataset()) // page_size + 1
+        self.assert_positive_integer_type(page)
+        self.assert_positive_integer_type(page_size)
+        
+        dataset = self.dataset()
+        total_pages = (len(dataset) + page_size - 1) // page_size  # Ceil division
+        
         data = self.get_page(page, page_size)
+        
         info = {
             "page": page,
             "page_size": page_size if page_size <= len(data) else len(data),
